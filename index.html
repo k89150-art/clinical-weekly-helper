@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clinical Weekly Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Clinical Weekly Helper</p>
+        <h1>Weekly 病程整理助手</h1>
+        <p class="subtitle">
+          貼上前次 weekly 與本週 progress notes，自動產生可貼到 ChatGPT 的整理指令。
+        </p>
+      </div>
+      <div class="privacy-card">
+        <strong>隱私提醒</strong>
+        <span>本頁不會上傳資料、不串 API、不儲存病人內容。完成後請按「清除全部」。</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <div class="section-title">
+          <h2>一、基本資料</h2>
+          <span>可不填，但填了會讓 weekly 更準</span>
+        </div>
+
+        <div class="grid">
+          <label>
+            年齡
+            <input id="age" type="text" placeholder="例如：75" autocomplete="off" />
+          </label>
+
+          <label>
+            性別
+            <select id="sex">
+              <option value="">未指定</option>
+              <option value="male">male</option>
+              <option value="female">female</option>
+            </select>
+          </label>
+
+          <label>
+            主要診斷
+            <input id="diagnosis" type="text" placeholder="例如：Pneumonia with respiratory failure" autocomplete="off" />
+          </label>
+
+          <label>
+            入院原因
+            <input id="admissionReason" type="text" placeholder="例如：dyspnea and fever" autocomplete="off" />
+          </label>
+
+          <label>
+            病人類型
+            <select id="patientType">
+              <option value="一般內科">一般內科</option>
+              <option value="感染症">感染症</option>
+              <option value="心臟科 / Cath / PCI">心臟科 / Cath / PCI</option>
+              <option value="呼吸衰竭 / ICU">呼吸衰竭 / ICU</option>
+              <option value="腎臟 / AKI / ESRD">腎臟 / AKI / ESRD</option>
+              <option value="GI bleeding">GI bleeding</option>
+              <option value="Cellulitis / Wound">Cellulitis / Wound</option>
+              <option value="Cancer / Chemotherapy">Cancer / Chemotherapy</option>
+              <option value="Stroke / Neuro">Stroke / Neuro</option>
+              <option value="其他">其他</option>
+            </select>
+          </label>
+
+          <label>
+            Weekly 週期
+            <input id="weekRange" type="text" placeholder="例如：6/17-6/23，可空白" autocomplete="off" />
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
+          <h2>二、前次 Weekly Summary</h2>
+          <span>病人住超過一週時貼這裡，可空白</span>
+        </div>
+        <textarea id="previousWeekly" placeholder="請貼上前一次 weekly summary。若是第一週可空白。"></textarea>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
+          <h2>三、本週 Progress Notes</h2>
+          <span>可一次貼上 5–7 筆 progress notes</span>
+        </div>
+        <textarea id="progressNotes" placeholder="請貼上本週每天的 progress notes。建議保留日期、S/O/A/P、檢驗、影像、用藥與處置。"></textarea>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
+          <h2>四、補充事項</h2>
+          <span>例如：準備出院、轉院、DNR、家屬決策、待追蹤檢查</span>
+        </div>
+        <textarea id="extraInfo" class="small-textarea" placeholder="可空白。"></textarea>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
+          <h2>五、輸出選項</h2>
+          <span>預設產生 weekly + 交班單</span>
+        </div>
+
+        <div class="checks">
+          <label class="check">
+            <input id="wantWeekly" type="checkbox" checked />
+            Weekly Summary
+          </label>
+          <label class="check">
+            <input id="wantHandoff" type="checkbox" checked />
+            交班單
+          </label>
+          <label class="check">
+            <input id="wantProblemList" type="checkbox" />
+            Problem list
+          </label>
+          <label class="check">
+            <input id="wantDischarge" type="checkbox" />
+            Discharge planning 重點
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="generateBtn" class="primary">產生 ChatGPT 指令</button>
+          <button id="copyPromptBtn">複製指令</button>
+          <button id="clearBtn" class="danger">清除全部</button>
+        </div>
+      </section>
+
+      <section class="panel output-panel">
+        <div class="section-title">
+          <h2>六、產生結果</h2>
+          <span>複製後貼到 ChatGPT</span>
+        </div>
+        <textarea id="outputPrompt" placeholder="產生後會出現在這裡。" readonly></textarea>
+        <p id="status" class="status"></p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        建議貼資料前先移除姓名、病歷號、身分證、生日、電話、地址等可識別資訊。
+      </p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
