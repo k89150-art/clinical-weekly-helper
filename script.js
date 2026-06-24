@@ -15,8 +15,7 @@ const fields = [
 const options = [
   "wantWeekly",
   "wantHandoff",
-  "wantProblemList",
-  "wantDischarge",
+  "wantTransfer",
 ];
 
 function getValue(id) {
@@ -37,8 +36,7 @@ function buildOutputList() {
   const list = [];
   if (isChecked("wantWeekly")) list.push("Weekly Summary");
   if (isChecked("wantHandoff")) list.push("交班單");
-  if (isChecked("wantProblemList")) list.push("Problem list");
-  if (isChecked("wantDischarge")) list.push("Discharge planning 重點");
+  if (isChecked("wantTransfer")) list.push("Transfer note");
   return list;
 }
 
@@ -108,8 +106,9 @@ function buildPrompt() {
 7. 請保留重要日期、檢查、抗生素、處置、檢驗趨勢與目前用藥重點。
 8. Weekly Summary 請使用英文病歷敘述格式。
 9. 交班單請使用中英混合條列式，簡潔、臨床值班可用。
-10. 若文字中有明顯錯字或醫療英文不順，請協助修正文法與用詞。
-11. 請不要輸出與病歷無關的解釋，直接給我結果。
+10. Transfer note 請使用英文病歷格式，適合病人轉出、轉入或轉院時使用。
+11. 若文字中有明顯錯字或醫療英文不順，請協助修正文法與用詞。
+12. 請不要輸出與病歷無關的解釋，直接給我結果。
 
 【我常用的 Weekly Summary 風格】
 This __-year-old male/female with ______ related. Because of ______, he/she was admitted for further evaluation and treatment.
@@ -182,12 +181,34 @@ ${isChecked("wantHandoff") ? `二、交班單
 - Procedure:
 - Discharge plan:
 ` : ""}
-${isChecked("wantProblemList") ? `三、Problem list
-- 請依目前臨床問題條列。
-- 每個 problem 後面簡短寫目前處理方向。
-` : ""}
-${isChecked("wantDischarge") ? `四、Discharge planning 重點
-- 請列出是否接近出院、仍需追蹤的問題、管路/抗生素/藥物/回診/轉介安排。
+${isChecked("wantTransfer") ? `三、Transfer note
+請使用英文病歷格式，並依以下架構整理：
+Dear Dr:
+This __-year-old male/female with history of ______ was admitted due to ______.
+
+During hospitalization, ______.
+For major active problems, ______.
+Important examinations/laboratory data showed ______.
+Treatment with ______ was given/adjusted.
+Currently, the patient is ______.
+
+Transfer reason:
+- 
+Current condition:
+- Conscious:
+- Vital signs:
+- O2/ventilator:
+- Diet:
+- Foley/drain/tube:
+- Wound:
+- Antibiotics/important medications:
+
+Plan and suggestion:
+1. 
+2. 
+3. 
+
+Thank you very much.
 ` : ""}`.trim();
 }
 
@@ -229,8 +250,7 @@ function clearAll() {
   $("sex").value = "";
   $("wantWeekly").checked = true;
   $("wantHandoff").checked = true;
-  $("wantProblemList").checked = false;
-  $("wantDischarge").checked = false;
+  $("wantTransfer").checked = false;
   $("outputPrompt").value = "";
 
   setStatus("已清除全部病人資料。");
