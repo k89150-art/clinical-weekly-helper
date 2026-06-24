@@ -12,12 +12,6 @@ const fields = [
   "extraInfo",
 ];
 
-const optionIds = [
-  "wantWeekly",
-  "wantHandoff",
-  "wantTransfer",
-];
-
 function getValue(id) {
   return ($(id)?.value || "").trim();
 }
@@ -56,16 +50,74 @@ function buildPatientSummary() {
 Weekly 週期：${weekRange}`;
 }
 
+function removeRecorderNames(lines) {
+  const result = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    // 移除單獨一行的「專科護理師」，並順便移除前一行可能是記錄者姓名的中文姓名。
+    if (/^專科護理師$/.test(line)) {
+      const previous = result[result.length - 1]?.trim() || "";
+      if (/^[\u4e00-\u9fa5]{2,5}$/.test(previous)) {
+        result.pop();
+      }
+      continue;
+    }
+
+    // 移除同一行出現的「XXX 專科護理師」。
+    if (/^[\u4e00-\u9fa5]{2,5}\s*專科護理師$/.test(line)) {
+      continue;
+    }
+
+    result.push(rawLine);
+  }
+
+  return result;
+}
+
+function cleanClinicalText(text) {
+  if (!text) return "";
+
+  let normalized = text
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/[\t\u00A0]+/g, " ")
+    .replace(/[ ]{2,}/g, " ");
+
+  let lines = normalized.split("\n").map((line) => line.trim());
+  lines = removeRecorderNames(lines);
+
+  const cleanedLines = [];
+  let blankCount = 0;
+
+  for (const line of lines) {
+    // 移除 HIS 複製時常見但對 GPT 整理沒幫助的操作欄位。
+    if (/^(VS審核|VS修改)$/.test(line)) continue;
+
+    if (line === "") {
+      blankCount += 1;
+      if (blankCount <= 1) cleanedLines.push("");
+      continue;
+    }
+
+    blankCount = 0;
+    cleanedLines.push(line);
+  }
+
+  return cleanedLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function buildOutputRequest(outputList) {
   return `請幫我整理成：
 ${outputList.map((item, index) => `${index + 1}. ${item}`).join("\n")}`;
 }
 
 function buildDataForGpt() {
-  const progressNotes = getValue("progressNotes");
+  const rawProgressNotes = getValue("progressNotes");
   const outputList = buildOutputList();
 
-  if (!progressNotes) {
+  if (!rawProgressNotes) {
     setStatus("請先貼上本週 Progress Notes。", true);
     $("progressNotes").focus();
     return "";
@@ -76,8 +128,9 @@ function buildDataForGpt() {
     return "";
   }
 
-  const previousWeekly = getValue("previousWeekly") || "無，這可能是第一份 weekly。";
-  const extraInfo = getValue("extraInfo") || "無。";
+  const previousWeekly = cleanClinicalText(getValue("previousWeekly")) || "無，這可能是第一份 weekly。";
+  const progressNotes = cleanClinicalText(rawProgressNotes);
+  const extraInfo = cleanClinicalText(getValue("extraInfo")) || "無。";
 
   return `${buildOutputRequest(outputList)}
 
@@ -99,7 +152,7 @@ function generatePrompt() {
   if (!content) return;
 
   $("outputPrompt").value = content;
-  setStatus("已產生給專屬 GPT 的內容，可以複製貼上。")
+  setStatus("已產生給專屬 GPT 的內容，並已自動移除記錄者姓名與多餘空白。可以複製貼上。");
 }
 
 async function copyPrompt() {
@@ -112,11 +165,11 @@ async function copyPrompt() {
 
   try {
     await navigator.clipboard.writeText(text);
-    setStatus("已複製到剪貼簿。")
+    setStatus("已複製到剪貼簿。");
   } catch (error) {
     $("outputPrompt").select();
     document.execCommand("copy");
-    setStatus("已嘗試複製。如果失敗，請手動全選複製。")
+    setStatus("已嘗試複製。如果失敗，請手動全選複製。");
   }
 }
 
@@ -135,7 +188,7 @@ function clearAll() {
   $("wantTransfer").checked = false;
   $("outputPrompt").value = "";
 
-  setStatus("已清除全部病人資料。")
+  setStatus("已清除全部病人資料。");
 }
 
 $("generateBtn").addEventListener("click", generatePrompt);
