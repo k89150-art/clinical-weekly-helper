@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
 
 const fields = ["age", "sex", "diagnosis", "admissionReason", "patientType", "weekRange", "previousWeekly", "progressNotes", "extraInfo"];
+const outputOptions = ["wantWeekly", "wantHandoff", "wantTransfer"];
 
 function getValue(id) {
   return ($(id)?.value || "").trim();
@@ -97,13 +98,13 @@ function buildDataForGpt() {
   const outputList = buildOutputList();
 
   if (!rawProgressNotes) {
-    setStatus("Please paste progress notes first.", true);
+    setStatus("請先貼上本週 Progress Notes。", true);
     $("progressNotes").focus();
     return "";
   }
 
   if (outputList.length === 0) {
-    setStatus("Please select at least one output type.", true);
+    setStatus("請至少勾選一個輸出項目。", true);
     return "";
   }
 
@@ -130,40 +131,48 @@ function generatePrompt() {
   const content = buildDataForGpt();
   if (!content) return;
   $("outputPrompt").value = content;
-  setStatus("Content generated and cleaned.");
+  setStatus("已產生並清理完成，可以複製貼到專屬 GPT。");
 }
 
 async function copyPrompt() {
   const text = $("outputPrompt").value.trim();
   if (!text) {
-    setStatus("Nothing to copy yet.", true);
+    setStatus("目前沒有可複製的內容。", true);
     return;
   }
   try {
     await navigator.clipboard.writeText(text);
-    setStatus("Copied.");
+    setStatus("已複製到剪貼簿。");
   } catch (error) {
     $("outputPrompt").select();
     document.execCommand("copy");
-    setStatus("Copy attempted. Please copy manually if it failed.");
+    setStatus("已嘗試複製，若失敗請手動全選複製。");
   }
 }
 
 function clearAll() {
-  const confirmed = confirm("Clear all content?");
+  const confirmed = confirm("確定要清除全部內容嗎？");
   if (!confirmed) return;
   fields.forEach((id) => {
     if ($(id)) $(id).value = "";
   });
-  $("patientType").value = "\u4e00\u822c\u5167\u79d1";
+  $("patientType").value = "一般內科";
   $("sex").value = "";
-  $("wantWeekly").checked = true;
-  $("wantHandoff").checked = true;
-  $("wantTransfer").checked = false;
+  outputOptions.forEach((id) => {
+    if ($(id)) $(id).checked = false;
+  });
   $("outputPrompt").value = "";
-  setStatus("Cleared.");
+  setStatus("已清除全部內容。");
+}
+
+function init() {
+  outputOptions.forEach((id) => {
+    if ($(id)) $(id).checked = false;
+  });
 }
 
 $("generateBtn").addEventListener("click", generatePrompt);
 $("copyPromptBtn").addEventListener("click", copyPrompt);
 $("clearBtn").addEventListener("click", clearAll);
+
+init();
