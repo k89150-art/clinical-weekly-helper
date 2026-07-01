@@ -2,7 +2,6 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clinical Weekly Helper</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -13,7 +12,7 @@
         <p class="eyebrow">Clinical Weekly Helper</p>
         <h1>Weekly 病程整理助手</h1>
         <p class="subtitle">
-          貼上前次 weekly 與本週 progress notes，整理成可貼到專屬 GPT 的資料格式。
+          貼上前次 weekly 與本週 progress notes，清理 HIS 複製雜訊後，整理成可貼到專屬 GPT 的資料格式。
         </p>
       </div>
       <div class="privacy-card">
@@ -22,11 +21,11 @@
       </div>
     </header>
 
-    <main>
-      <section class="panel">
+    <main class="workspace">
+      <section class="panel basic-panel">
         <div class="section-title">
           <h2>一、基本資料</h2>
-          <span>可不填，但填了會讓 weekly 更準</span>
+          <span>可不填，但填了會讓 GPT 判斷更準</span>
         </div>
 
         <div class="grid">
@@ -77,7 +76,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel input-panel">
         <div class="section-title">
           <h2>二、前次 Weekly Summary</h2>
           <span>病人住超過一週時貼這裡，可空白</span>
@@ -85,15 +84,15 @@
         <textarea id="previousWeekly" placeholder="請貼上前一次 weekly summary。若是第一週可空白。"></textarea>
       </section>
 
-      <section class="panel">
+      <section class="panel input-panel large-input">
         <div class="section-title">
           <h2>三、本週 Progress Notes</h2>
-          <span>可一次貼上 5–7 筆 progress notes</span>
+          <span>可一次貼上整週 progress notes</span>
         </div>
-        <textarea id="progressNotes" placeholder="請貼上本週每天的 progress notes。建議保留日期、S/O/A/P、檢驗、影像、用藥與處置。"></textarea>
+        <textarea id="progressNotes" placeholder="請貼上本週 progress notes。系統會在產生結果時自動清理多餘空白、Title、修改、存為範本、VS審核/VS修改、記錄者姓名與專科護理師。"></textarea>
       </section>
 
-      <section class="panel">
+      <section class="panel input-panel">
         <div class="section-title">
           <h2>四、補充事項</h2>
           <span>例如：準備出院、轉院、DNR、家屬決策、待追蹤檢查</span>
@@ -101,19 +100,19 @@
         <textarea id="extraInfo" class="small-textarea" placeholder="可空白。"></textarea>
       </section>
 
-      <section class="panel">
+      <section class="panel control-panel">
         <div class="section-title">
           <h2>五、輸出選項</h2>
-          <span>預設產生 weekly + 交班單，可加選 transfer note</span>
+          <span>請自行勾選需要產出的內容</span>
         </div>
 
         <div class="checks">
           <label class="check">
-            <input id="wantWeekly" type="checkbox" checked />
+            <input id="wantWeekly" type="checkbox" />
             Weekly Summary
           </label>
           <label class="check">
-            <input id="wantHandoff" type="checkbox" checked />
+            <input id="wantHandoff" type="checkbox" />
             交班單
           </label>
           <label class="check">
@@ -140,9 +139,7 @@
     </main>
 
     <footer>
-      <p>
-        建議貼資料前先移除姓名、病歷號、身分證、生日、電話、地址等可識別資訊。
-      </p>
+      <p>建議貼資料前先移除姓名、病歷號、身分證、生日、電話、地址等可識別資訊。</p>
     </footer>
   </div>
 
