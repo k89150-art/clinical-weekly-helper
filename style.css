@@ -3,65 +3,66 @@
 }
 
 :root {
-  --bg: #f5f7fb;
+  --bg: #f4f6fa;
   --panel: #ffffff;
   --text: #172033;
-  --muted: #637083;
-  --line: #dbe1ea;
+  --muted: #657186;
+  --line: #d9e1ec;
   --primary: #2457c5;
-  --primary-dark: #1b4295;
+  --primary-dark: #183f96;
   --danger: #c52f3d;
   --danger-dark: #9e2430;
   --soft: #eef3ff;
-  --shadow: 0 8px 24px rgba(24, 39, 75, 0.08);
+  --shadow: 0 6px 20px rgba(24, 39, 75, 0.07);
 }
 
 body {
   margin: 0;
+  min-width: 1180px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .app {
-  width: min(1120px, calc(100% - 28px));
+  width: 1180px;
   margin: 0 auto;
-  padding: 28px 0 40px;
+  padding: 26px 0 36px;
 }
 
 .hero {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 20px;
+  grid-template-columns: 1fr 340px;
+  gap: 18px;
   align-items: stretch;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .eyebrow {
   margin: 0 0 4px;
   color: var(--primary);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.05em;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(28px, 4vw, 44px);
+  font-size: 38px;
   line-height: 1.15;
 }
 
 .subtitle {
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   color: var(--muted);
-  font-size: 17px;
+  font-size: 16px;
 }
 
 .privacy-card {
   background: var(--soft);
   border: 1px solid #cfdcff;
-  border-radius: 18px;
-  padding: 18px;
+  border-radius: 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -75,15 +76,15 @@ h1 {
 
 .privacy-card span {
   color: #39485d;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 18px;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow);
 }
 
@@ -92,12 +93,12 @@ h1 {
   gap: 12px;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .section-title h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 19px;
 }
 
 .section-title span {
@@ -107,8 +108,9 @@ h1 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: 100px 160px 1fr 1fr 220px 170px;
+  gap: 12px;
+  align-items: end;
 }
 
 label {
@@ -124,9 +126,9 @@ select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 11px 12px;
-  font-size: 16px;
+  border-radius: 10px;
+  padding: 10px 11px;
+  font-size: 15px;
   font-family: inherit;
   color: var(--text);
   background: #fff;
@@ -137,58 +139,62 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(36, 87, 197, 0.12);
+  box-shadow: 0 0 0 3px rgba(36, 87, 197, 0.12);
 }
 
 textarea {
-  min-height: 220px;
+  min-height: 190px;
   resize: vertical;
-  line-height: 1.5;
+  line-height: 1.48;
   font-family: "Consolas", "SFMono-Regular", "Noto Sans TC", monospace;
 }
 
+.large-input textarea {
+  min-height: 340px;
+}
+
 .small-textarea {
-  min-height: 120px;
+  min-height: 100px;
 }
 
 .output-panel textarea {
   min-height: 360px;
+  background: #fbfcff;
 }
 
 .checks {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 .check {
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 12px 14px;
   background: #fbfcff;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
-  font-weight: 700;
+  gap: 10px;
+  font-weight: 800;
 }
 
 .check input {
   width: auto;
-  transform: scale(1.15);
+  transform: scale(1.18);
 }
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 button {
   border: 0;
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 16px;
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
   background: #e8edf5;
@@ -211,6 +217,7 @@ button.primary:hover {
 button.danger {
   background: var(--danger);
   color: white;
+  margin-left: auto;
 }
 
 button.danger:hover {
@@ -218,8 +225,8 @@ button.danger:hover {
 }
 
 .status {
-  min-height: 24px;
-  margin: 10px 0 0;
+  min-height: 22px;
+  margin: 8px 0 0;
   color: var(--primary-dark);
   font-weight: 700;
 }
@@ -227,29 +234,6 @@ button.danger:hover {
 footer {
   color: var(--muted);
   text-align: center;
-  font-size: 14px;
-  padding: 10px;
-}
-
-@media (max-width: 800px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .checks {
-    grid-template-columns: 1fr;
-  }
-
-  .section-title {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .actions button {
-    width: 100%;
-  }
+  font-size: 13px;
+  padding: 8px;
 }
