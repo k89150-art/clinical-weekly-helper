@@ -76,12 +76,19 @@
         </div>
       </section>
 
+      <div id="privacyWarning" class="privacy-warning" hidden>
+        <strong>偵測到疑似可識別資訊</strong>
+        <ul id="privacyWarningList"></ul>
+        <span>系統不會上傳或記錄這些內容，但建議手動移除後再產生或複製。</span>
+      </div>
+
       <section class="panel input-panel">
         <div class="section-title">
           <h2>二、前次 Weekly Summary</h2>
           <span>病人住超過一週時貼這裡，可空白</span>
         </div>
         <textarea id="previousWeekly" placeholder="請貼上前一次 weekly summary。若是第一週可空白。"></textarea>
+        <div class="field-meta"><span id="previousWeeklyCount">0 字</span></div>
       </section>
 
       <section class="panel input-panel large-input">
@@ -90,6 +97,7 @@
           <span>可一次貼上整週 progress notes</span>
         </div>
         <textarea id="progressNotes" placeholder="請貼上本週 progress notes。系統會在產生結果時自動清理多餘空白、Title、修改、存為範本、VS審核/VS修改、記錄者姓名與專科護理師。"></textarea>
+        <div class="field-meta"><span id="progressNotesCount">0 字</span></div>
       </section>
 
       <section class="panel input-panel">
@@ -98,6 +106,7 @@
           <span>例如：準備出院、轉院、DNR、家屬決策、待追蹤檢查</span>
         </div>
         <textarea id="extraInfo" class="small-textarea" placeholder="可空白。"></textarea>
+        <div class="field-meta"><span id="extraInfoCount">0 字</span></div>
       </section>
 
       <section class="panel control-panel">
@@ -124,6 +133,10 @@
         <div class="actions">
           <button id="generateBtn" class="primary">產生 GPT 內容</button>
           <button id="copyPromptBtn">複製內容</button>
+          <label class="check auto-clear-check">
+            <input id="autoClear" type="checkbox" />
+            複製後自動清除
+          </label>
           <button id="clearBtn" class="danger">清除全部</button>
         </div>
       </section>
