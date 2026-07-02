@@ -2,6 +2,20 @@ const $ = (id) => document.getElementById(id);
 
 const fields = ["age", "sex", "diagnosis", "admissionReason", "patientType", "weekRange", "previousWeekly", "progressNotes", "extraInfo"];
 const outputOptions = ["wantWeekly", "wantHandoff", "wantTransfer"];
+const scannedTextareaIds = ["previousWeekly", "progressNotes", "extraInfo"];
+
+const phiPatterns = [
+  { label: "身分證字號格式", regex: /\b[A-Za-z][12]\d{8}\b/g },
+  { label: "手機號碼格式", regex: /\b09\d{2}[-\s]?\d{3}[-\s]?\d{3}\b/g },
+  { label: "生日格式（伴隨生日/DOB 關鍵字）", regex: /(生日|出生日期|DOB)[:\s：]{0,4}(19|20)\d{2}[\/\-](0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12]\d|3[01])/gi },
+  { label: "病歷號 / 證號標註", regex: /(病歷號|病歷号|MRN|chart no\.?)[:\s：]{0,3}\d{4,10}/gi },
+];
+
+const countThresholds = {
+  previousWeekly: 6000,
+  progressNotes: 15000,
+  extraInfo: 3000,
+};
 
 function getValue(id) {
   return ($(id)?.value || "").trim();
@@ -93,18 +107,80 @@ function buildOutputRequest(outputList) {
   return `\u8acb\u5e6b\u6211\u6574\u7406\u6210\uff1a\n${outputList.map((item, index) => `${index + 1}. ${item}`).join("\n")}`;
 }
 
+// ---------------- \u96b1\u79c1\u5075\u6e2c\uff08\u7d14\u524d\u7aef\uff0c\u4e0d\u4e0a\u50b3\u3001\u4e0d\u5132\u5b58\uff09 ----------------
+
+function scanTextForPHI(text) {
+  const findings = [];
+  for (const pattern of phiPatterns) {
+    const matches = text.match(pattern.regex);
+    if (matches && matches.length > 0) {
+      findings.push({ label: pattern.label, count: matches.length });
+    }
+  }
+  return findings;
+}
+
+function updatePrivacyWarning() {
+  const combinedText = scannedTextareaIds.map((id) => getValue(id)).join("\n");
+  const findings = scanTextForPHI(combinedText);
+  const banner = $("privacyWarning");
+  const list = $("privacyWarningList");
+
+  if (findings.length === 0) {
+    banner.hidden = true;
+    list.innerHTML = "";
+    return false;
+  }
+
+  list.innerHTML = findings.map((item) => `<li>${item.label} \u00d7 ${item.count}</li>`).join("");
+  banner.hidden = false;
+  return true;
+}
+
+// ---------------- \u5b57\u6578\u7d71\u8a08 ----------------
+
+function updateCharCount(id) {
+  const countEl = $(`${id}Count`);
+  if (!countEl) return;
+  const length = getValue(id).length;
+  countEl.textContent = `${length.toLocaleString("zh-TW")} \u5b57`;
+  const threshold = countThresholds[id];
+  if (threshold && length > threshold) {
+    countEl.classList.add("count-warning");
+    countEl.textContent += "\uff08\u5167\u5bb9\u504f\u9577\uff0c\u5efa\u8b70\u78ba\u8a8d GPT \u53ef\u63a5\u53d7\u7684\u9577\u5ea6\uff09";
+  } else {
+    countEl.classList.remove("count-warning");
+  }
+}
+
+// ---------------- \u96e2\u958b\u9801\u9762\u63d0\u9192 ----------------
+
+function hasUnsavedContent() {
+  const hasFieldContent = fields.some((id) => getValue(id) !== "");
+  const hasOutput = getValue("outputPrompt") !== "";
+  return hasFieldContent || hasOutput;
+}
+
+function handleBeforeUnload(event) {
+  if (!hasUnsavedContent()) return;
+  event.preventDefault();
+  event.returnValue = "";
+}
+
+// ---------------- \u4e3b\u8981\u908f\u8f2f ----------------
+
 function buildDataForGpt() {
   const rawProgressNotes = getValue("progressNotes");
   const outputList = buildOutputList();
 
   if (!rawProgressNotes) {
-    setStatus("請先貼上本週 Progress Notes。", true);
+    setStatus("\u8acb\u5148\u8cbc\u4e0a\u672c\u9031 Progress Notes\u3002", true);
     $("progressNotes").focus();
     return "";
   }
 
   if (outputList.length === 0) {
-    setStatus("請至少勾選一個輸出項目。", true);
+    setStatus("\u8acb\u81f3\u5c11\u52fe\u9078\u4e00\u500b\u8f38\u51fa\u9805\u76ee\u3002", true);
     return "";
   }
 
@@ -128,51 +204,81 @@ ${extraInfo}`.trim();
 }
 
 function generatePrompt() {
+  const hasPHI = updatePrivacyWarning();
   const content = buildDataForGpt();
   if (!content) return;
   $("outputPrompt").value = content;
-  setStatus("已產生並清理完成，可以複製貼到專屬 GPT。");
+  if (hasPHI) {
+    setStatus("\u5df2\u7522\u751f\uff0c\u4f46\u5075\u6e2c\u5230\u7591\u4f3c\u53ef\u8b58\u5225\u8cc7\u8a0a\uff0c\u8acb\u5148\u78ba\u8a8d\u4e0a\u65b9\u8b66\u793a\u3002", true);
+  } else {
+    setStatus("\u5df2\u7522\u751f\u4e26\u6e05\u7406\u5b8c\u6210\uff0c\u53ef\u4ee5\u8907\u88fd\u8cbc\u5230\u5c08\u5c6c GPT\u3002");
+  }
 }
 
 async function copyPrompt() {
   const text = $("outputPrompt").value.trim();
   if (!text) {
-    setStatus("目前沒有可複製的內容。", true);
+    setStatus("\u76ee\u524d\u6c92\u6709\u53ef\u8907\u88fd\u7684\u5167\u5bb9\u3002", true);
     return;
   }
+  let copied = false;
   try {
     await navigator.clipboard.writeText(text);
-    setStatus("已複製到剪貼簿。");
+    copied = true;
   } catch (error) {
     $("outputPrompt").select();
     document.execCommand("copy");
-    setStatus("已嘗試複製，若失敗請手動全選複製。");
+    copied = true;
   }
+
+  if (isChecked("autoClear")) {
+    clearAll(true);
+    setStatus("\u5df2\u8907\u88fd\u4e26\u81ea\u52d5\u6e05\u9664\u5168\u90e8\u5167\u5bb9\u3002");
+    return;
+  }
+
+  setStatus(copied ? "\u5df2\u8907\u88fd\u5230\u526a\u8cbc\u7c3f\u3002" : "\u5df2\u5617\u8a66\u8907\u88fd\uff0c\u82e5\u5931\u6557\u8acb\u624b\u52d5\u5168\u9078\u8907\u88fd\u3002");
 }
 
-function clearAll() {
-  const confirmed = confirm("確定要清除全部內容嗎？");
-  if (!confirmed) return;
+function clearAll(skipConfirm = false) {
+  if (!skipConfirm) {
+    const confirmed = confirm("\u78ba\u5b9a\u8981\u6e05\u9664\u5168\u90e8\u5167\u5bb9\u55ce\uff1f");
+    if (!confirmed) return;
+  }
   fields.forEach((id) => {
     if ($(id)) $(id).value = "";
   });
-  $("patientType").value = "一般內科";
+  $("patientType").value = "\u4e00\u822c\u5167\u79d1";
   $("sex").value = "";
   outputOptions.forEach((id) => {
     if ($(id)) $(id).checked = false;
   });
   $("outputPrompt").value = "";
-  setStatus("已清除全部內容。");
+  scannedTextareaIds.forEach((id) => updateCharCount(id));
+  updatePrivacyWarning();
+  if (!skipConfirm) setStatus("\u5df2\u6e05\u9664\u5168\u90e8\u5167\u5bb9\u3002");
 }
 
 function init() {
   outputOptions.forEach((id) => {
     if ($(id)) $(id).checked = false;
   });
+
+  scannedTextareaIds.forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    updateCharCount(id);
+    el.addEventListener("input", () => {
+      updateCharCount(id);
+      updatePrivacyWarning();
+    });
+  });
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
 }
 
 $("generateBtn").addEventListener("click", generatePrompt);
 $("copyPromptBtn").addEventListener("click", copyPrompt);
-$("clearBtn").addEventListener("click", clearAll);
+$("clearBtn").addEventListener("click", () => clearAll(false));
 
 init();
